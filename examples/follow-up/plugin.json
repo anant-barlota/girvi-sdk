@@ -1,0 +1,19 @@
+{
+  "id": "example/follow-up",
+  "name": "Follow-up",
+  "version": "0.1.0",
+  "api": "girvi/v1",
+  "description": "Posts loan events to your service, and reminds you about loans still open after the days you choose.",
+  "author": "Girvi SDK example",
+  "events": ["loan.created", "payment.received", "loan.redeemed"],
+  "fields": ["customer.name", "customer.phone"],
+  "http_hosts": ["{setting:url}", "ntfy.sh"],
+  "settings": [
+    {"key": "url", "title": "Your service URL", "description": "Each event, and each reminder, is posted here as JSON.", "required": true},
+    {"key": "token", "title": "Token", "description": "Sent as a bearer token.", "secret": true},
+    {"key": "reminder_days", "title": "Remind after (days)", "description": "A reminder is sent for a loan still open this many days after it was created.", "default": "30"},
+    {"key": "share_phone", "title": "Include customer phone numbers", "type": "boolean", "default": "false"},
+    {"key": "ntfy_topic", "title": "ntfy.sh topic", "description": "Also push each reminder to this ntfy.sh topic, for a phone notification.", "advanced": true}
+  ],
+  "delivery": "at_least_once"
+}
