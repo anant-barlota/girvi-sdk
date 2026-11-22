@@ -17,6 +17,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/anant-barlota/girvi-sdk/plugin/contract"
 	"golang.org/x/mod/semver"
 )
 
@@ -56,8 +57,9 @@ type Bundle struct {
 	Size   int64  `json:"size"`
 }
 
-// MaxBundleSize is the largest download a catalog may point at.
-const MaxBundleSize = 128 << 20
+// MaxBundleSize is the largest download a catalog may point at: the largest
+// bundle Girvi installs.
+const MaxBundleSize = contract.MaxBundle
 
 var (
 	idPattern     = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,48}/[a-z0-9][a-z0-9-]{0,48}$`)

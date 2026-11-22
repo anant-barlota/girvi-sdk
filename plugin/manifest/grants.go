@@ -44,7 +44,9 @@ func (m Manifest) CheckImports(compiled wazero.CompiledModule) error {
 // HostGranted reports whether the manifest's http_hosts covers u, and whether
 // the grant reaches this computer or network on purpose (local). An entry is:
 //   - "{setting:KEY}": the exact host and port of the URL the user typed into
-//     that setting. The user chose it, so it may be local.
+//     that setting. It may be local only if the user typed a local address
+//     (localhost, a private IP, a .local name): a public name the user typed
+//     could be pointed at this computer later, by whoever controls its DNS.
 //   - "name" or "name:port": that host, on any port or on that one. It may be
 //     local only if the entry itself names a local address.
 //   - "*.name": any subdomain. Never local.
@@ -57,7 +59,7 @@ func (m Manifest) HostGranted(settings map[string]string, u *url.URL) (granted, 
 		if key, ok := SettingHost(entry); ok {
 			s, err := url.Parse(strings.TrimSpace(settings[key]))
 			if err == nil && s.Hostname() != "" && hostPort(s) == hostPort(u) {
-				return true, true
+				return true, LocalName(strings.TrimSuffix(strings.ToLower(s.Hostname()), "."))
 			}
 			continue
 		}

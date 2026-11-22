@@ -86,13 +86,15 @@ func TestHostGrants(t *testing.T) {
 		"https://evilcdn.example.com/x":        {false, false},
 		"https://api.example.com.evil.io/x":    {false, false},
 		"https://user@evil.io/api.example.com": {false, false},
-		"https://hooks.shop.example/other":     {true, true},
-		"https://hooks.shop.example:443/in":    {true, true},
-		"http://hooks.shop.example/in":         {false, false}, // another port
-		"http://localhost:9000/tally":          {true, true},
-		"http://localhost:9100/x":              {true, true},
-		"http://localhost:8081/customers":      {false, false}, // not the port the user or the manifest named
-		"http://127.0.0.1:9000/x":              {false, false},
+		// A public name the user typed is checked at connect time like any
+		// other, so its DNS cannot later point it at this computer.
+		"https://hooks.shop.example/other":  {true, false},
+		"https://hooks.shop.example:443/in": {true, false},
+		"http://hooks.shop.example/in":      {false, false}, // another port
+		"http://localhost:9000/tally":       {true, true},
+		"http://localhost:9100/x":           {true, true},
+		"http://localhost:8081/customers":   {false, false}, // not the port the user or the manifest named
+		"http://127.0.0.1:9000/x":           {false, false},
 	} {
 		u, err := url.Parse(target)
 		if err != nil {
