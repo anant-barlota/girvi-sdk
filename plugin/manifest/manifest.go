@@ -231,10 +231,19 @@ func ReadBundle(zipBytes []byte) (*Bundle, error) {
 }
 
 // LocalName reports whether a host name or address is this computer or a
-// private network outright. Such an http_hosts entry must name a port.
+// private network outright. Such an http_hosts entry must name a port. The
+// names are the ones nobody can register publicly, so no outsider controls
+// their DNS: localhost, .local (mDNS), .internal (reserved by ICANN for
+// private use) and .home.arpa (RFC 8375).
 func LocalName(name string) bool {
-	if name == "localhost" || strings.HasSuffix(name, ".localhost") || strings.HasSuffix(name, ".local") {
+	name = strings.TrimSuffix(strings.ToLower(name), ".")
+	if name == "localhost" {
 		return true
+	}
+	for _, suffix := range []string{".localhost", ".local", ".internal", ".home.arpa"} {
+		if strings.HasSuffix(name, suffix) {
+			return true
+		}
 	}
 	addr, err := netip.ParseAddr(name)
 	return err == nil && LocalAddr(addr)

@@ -77,8 +77,9 @@ to this computer or a private network is refused, so a plugin cannot reach
 Girvi itself or other machines in the shop, whoever controls the name's DNS.
 The exceptions are a local address named in the manifest (with its port), and
 a setting whose URL the user typed as a local address: `localhost`, a private
-IP such as `192.168.1.20`, or a `.local` name. A machine on the shop's network
-is reached by its IP or `.local` name, not by another name. Redirects are not
+IP such as `192.168.1.20`, or a name under `.local`, `.internal` or `.home.arpa`
+(names nobody can register publicly). A machine on the shop's network is
+reached by its IP or one of those names, not by another name. Redirects are not
 followed.
 
 ### settings
