@@ -91,7 +91,11 @@ func TestHostGrants(t *testing.T) {
 		"https://hooks.shop.example/other":  {true, false},
 		"https://hooks.shop.example:443/in": {true, false},
 		"http://hooks.shop.example/in":      {false, false}, // another port
-		"http://localhost:9000/tally":       {true, true},
+		// The user typed https: plain http on that port sends the request,
+		// secrets and all, unencrypted before the server can refuse it.
+		"http://hooks.shop.example:443/in": {false, false},
+		"https://localhost:9000/tally":     {false, false},
+		"http://localhost:9000/tally":      {true, true},
 		// A name nobody can register publicly is as local as an address.
 		"http://printer.internal:631/jobs": {true, true},
 		"http://localhost:9100/x":          {true, true},

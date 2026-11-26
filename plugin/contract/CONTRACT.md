@@ -70,7 +70,7 @@ Each entry is one of:
 | `"api.example.com:8443"` | That host, on that port only. |
 | `"*.example.com"` | Any subdomain of `example.com`, not `example.com` itself. At least two labels after `*.` (`*.com` is refused). |
 | `"localhost:9000"`, `"192.168.1.20:8080"` | A host on this computer or the shop's network. Must name a port. |
-| `"{setting:KEY}"` | The exact host and port of the URL the user typed into setting `KEY`. That setting cannot have a default. |
+| `"{setting:KEY}"` | The exact scheme, host and port of the URL the user typed into setting `KEY`. That setting cannot have a default. |
 
 Girvi checks the address a request actually connects to. A name that resolves
 to this computer or a private network is refused, so a plugin cannot reach
