@@ -70,12 +70,17 @@ Each entry is one of:
 | `"api.example.com:8443"` | That host, on that port only. |
 | `"*.example.com"` | Any subdomain of `example.com`, not `example.com` itself. At least two labels after `*.` (`*.com` is refused). |
 | `"localhost:9000"`, `"192.168.1.20:8080"` | A host on this computer or the shop's network. Must name a port. |
-| `"{setting:KEY}"` | The exact host and port of the URL the user typed into setting `KEY`. That setting cannot have a default. |
+| `"{setting:KEY}"` | The exact scheme, host and port of the URL the user typed into setting `KEY`. That setting cannot have a default. |
 
-Girvi checks the address a request actually connects to. A name granted as a
-public host that resolves to this computer or a private network is refused, so
-a plugin cannot reach Girvi itself or other machines in the shop unless the
-user typed that address or the manifest names it. Redirects are not followed.
+Girvi checks the address a request actually connects to. A name that resolves
+to this computer or a private network is refused, so a plugin cannot reach
+Girvi itself or other machines in the shop, whoever controls the name's DNS.
+The exceptions are a local address named in the manifest (with its port), and
+a setting whose URL the user typed as a local address: `localhost`, a private
+IP such as `192.168.1.20`, or a name under `.local`, `.internal` or `.home.arpa`
+(names nobody can register publicly). A machine on the shop's network is
+reached by its IP or one of those names, not by another name. Redirects are not
+followed.
 
 ### settings
 
@@ -211,6 +216,9 @@ a new connection.
 | Outcome `note` kept | 1000 bytes |
 | HTTP request body | 1 MB |
 | HTTP requests per call | 20 |
+| Bundle (the zip) | 64 MB |
+| Tables | 1, of at most 1,048,576 entries; it cannot grow while running |
+| Local variables | 50,000 per function, 1,048,576 in all |
 | HTTP response body | 1 MB |
 | Storage key | 256 bytes |
 | Storage value | 1 MB |

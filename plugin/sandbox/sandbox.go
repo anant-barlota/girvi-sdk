@@ -66,7 +66,11 @@ type Engine struct {
 func NewEngine(ctx context.Context, cache wazero.CompilationCache) (*Engine, error) {
 	cfg := wazero.NewRuntimeConfig().
 		WithCloseOnContextDone(true). // lets the deadline stop a call that never returns
-		WithMemoryLimitPages(contract.MemoryLimitMB << 20 / wasmPage)
+		WithMemoryLimitPages(contract.MemoryLimitMB << 20 / wasmPage).
+		// Without reference types a module has at most one table and cannot
+		// grow it while running (table.grow), so its size stays what precheck
+		// allowed. Go does not use them.
+		WithCoreFeatures(api.CoreFeaturesV2.SetEnabled(api.CoreFeatureReferenceTypes, false))
 	if cache != nil {
 		cfg = cfg.WithCompilationCache(cache)
 	}
@@ -95,6 +99,9 @@ type Module struct {
 // Compile checks a plugin's code against its manifest and compiles it. Nothing
 // in the plugin runs.
 func (e *Engine) Compile(ctx context.Context, m manifest.Manifest, wasm []byte) (*Module, error) {
+	if err := precheck(wasm); err != nil {
+		return nil, fmt.Errorf("plugin.wasm is not valid: %w", err)
+	}
 	compiled, err := e.rt.CompileModule(ctx, wasm)
 	if err != nil {
 		return nil, fmt.Errorf("plugin.wasm is not valid: %w", err)

@@ -75,8 +75,8 @@ func TestReadBundle(t *testing.T) {
 }
 
 func TestHostGrants(t *testing.T) {
-	settings := map[string]string{"url": "https://hooks.shop.example/in", "tally": "http://localhost:9000"}
-	entries := []string{"api.example.com", "*.cdn.example.com", "localhost:9100", "{setting:url}", "{setting:tally}"}
+	settings := map[string]string{"url": "https://hooks.shop.example/in", "tally": "http://localhost:9000", "printer": "http://Printer.Internal.:631"}
+	entries := []string{"api.example.com", "*.cdn.example.com", "localhost:9100", "{setting:url}", "{setting:tally}", "{setting:printer}"}
 	for target, want := range map[string][2]bool{ // granted, local
 		"https://api.example.com/x":            {true, false},
 		"https://API.Example.com./x":           {true, false},
@@ -86,13 +86,21 @@ func TestHostGrants(t *testing.T) {
 		"https://evilcdn.example.com/x":        {false, false},
 		"https://api.example.com.evil.io/x":    {false, false},
 		"https://user@evil.io/api.example.com": {false, false},
-		"https://hooks.shop.example/other":     {true, true},
-		"https://hooks.shop.example:443/in":    {true, true},
-		"http://hooks.shop.example/in":         {false, false}, // another port
-		"http://localhost:9000/tally":          {true, true},
-		"http://localhost:9100/x":              {true, true},
-		"http://localhost:8081/customers":      {false, false}, // not the port the user or the manifest named
-		"http://127.0.0.1:9000/x":              {false, false},
+		// A public name the user typed is checked at connect time like any
+		// other, so its DNS cannot later point it at this computer.
+		"https://hooks.shop.example/other":  {true, false},
+		"https://hooks.shop.example:443/in": {true, false},
+		"http://hooks.shop.example/in":      {false, false}, // another port
+		// The user typed https: plain http on that port sends the request,
+		// secrets and all, unencrypted before the server can refuse it.
+		"http://hooks.shop.example:443/in": {false, false},
+		"https://localhost:9000/tally":     {false, false},
+		"http://localhost:9000/tally":      {true, true},
+		// A name nobody can register publicly is as local as an address.
+		"http://printer.internal:631/jobs": {true, true},
+		"http://localhost:9100/x":          {true, true},
+		"http://localhost:8081/customers":  {false, false}, // not the port the user or the manifest named
+		"http://127.0.0.1:9000/x":          {false, false},
 	} {
 		u, err := url.Parse(target)
 		if err != nil {
@@ -113,6 +121,18 @@ func TestLocalAddr(t *testing.T) {
 	} {
 		if got := manifest.LocalAddr(netip.MustParseAddr(addr)); got != want {
 			t.Errorf("%s: local=%v, want %v", addr, got, want)
+		}
+	}
+}
+
+func TestLocalName(t *testing.T) {
+	for name, want := range map[string]bool{
+		"localhost": true, "app.localhost": true, "printer.local": true, "tally.internal": true,
+		"nas.home.arpa": true, "Tally.Internal.": true, "192.168.1.20": true, "127.0.0.1": true,
+		"example.com": false, "internal.example.com": false, "myinternal": false, "pc.lan": false, "8.8.8.8": false,
+	} {
+		if got := manifest.LocalName(name); got != want {
+			t.Errorf("%s: %v, want %v", name, got, want)
 		}
 	}
 }
